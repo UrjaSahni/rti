@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}RTI Query Assistant{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4 mb-4">⚖️ RTI Query Assistant</h1>
+    <p class="lead text-muted mb-5">
+        AI-powered Right to Information helper — draft RTI applications, know your rights, 
+        track deadlines, and draft appeal letters.
+    </p>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-pencil-square display-4 text-primary mb-3"></i>
+                    <h5>File RTI Application</h5>
+                    <p class="text-muted">Generate legally compliant RTI applications using AI</p>
+                    <a href="{{ url_for('file_rti') }}" class="btn btn-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-lightbulb display-4 text-warning mb-3"></i>
+                    <h5>Know Your Rights</h5>
+                    <p class="text-muted">Ask questions about the RTI Act, 2005</p>
+                    <a href="{{ url_for('know_your_rights') }}" class="btn btn-warning">Learn More</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-search display-4 text-info mb-3"></i>
+                    <h5>Track My RTIs</h5>
+                    <p class="text-muted">View your RTI applications and deadlines</p>
+                    <a href="{{ url_for('track_rti') }}" class="btn btn-info">Track Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-earmark-text display-4 text-success mb-3"></i>
+                    <h5>Parse Response</h5>
+                    <p class="text-muted">Analyze government responses using AI</p>
+                    <a href="{{ url_for('parse_response') }}" class="btn btn-success">Analyze</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-lightning display-4 text-danger mb-3"></i>
+                    <h5>Draft Appeal</h5>
+                    <p class="text-muted">Generate first appeal letters automatically</p>
+                    <a href="{{ url_for('draft_appeal') }}" class="btn btn-danger">Create Appeal</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
