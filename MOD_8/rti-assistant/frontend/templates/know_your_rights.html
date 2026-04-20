@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Know Your Rights - RTI Query Assistant{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-lightbulb text-warning"></i> Know Your RTI Rights</h2>
+<p class="text-muted mb-4">
+    Ask any question about the Right to Information Act, 2005. 
+    Answers are grounded in the Act and CIC case precedents.
+</p>
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-chat-dots"></i> Quick Questions
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            {% for q in example_questions %}
+            <button type="button" class="btn btn-outline-primary example-btn" onclick="setQuestion('{{ q }}')">
+                {{ q[:35] }}{% if q|length > 35 %}…{% endif %}
+            </button>
+            {% endfor %}
+        </div>
+
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label">Your question:</label>
+                <input type="text" class="form-control form-control-lg" name="question" id="question"
+                    value="{{ question }}" placeholder="e.g. What is the penalty for PIO not responding?">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-search"></i> Get Answer
+            </button>
+        </form>
+    </div>
+</div>
+
+{% if result %}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-book"></i> Answer
+    </div>
+    <div class="card-body">
+        <div class="mb-3">{{ result.answer | safe }}</div>
+
+        <div class="row">
+            <div class="col-md-8">
+                {% if result.source_sections %}
+                <p class="mb-0">
+                    <strong>Sections cited:</strong>
+                    {% for s in result.source_sections %}
+                    <span class="badge bg-secondary">Section {{ s }}</span>
+                    {% endfor %}
+                </p>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="badge bg-info fs-6">Confidence: {{ (result.confidence * 100)|int }}%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if result.case_precedents %}
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="bi bi-folder"></i> CIC Case Precedents
+    </div>
+    <div class="card-body">
+        {% for p in result.case_precedents %}
+        <div class="alert alert-light border mb-2">
+            <strong>Precedent {{ loop.index }}:</strong><br>
+            {{ p[:300] }}{% if p|length > 300 %}...{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i> This is AI-generated legal guidance. 
+    Verify with a legal expert or at <a href="https://rti.gov.in" target="_blank">rti.gov.in</a> before taking action.
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setQuestion(q) {
+    document.getElementById('question').value = q;
+}
+</script>
+{% endblock %}

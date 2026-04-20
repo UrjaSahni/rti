@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Draft Appeal Letter - RTI Query Assistant{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-lightning text-warning"></i> Draft First Appeal Letter</h2>
+<p class="text-muted mb-4">
+    Generate a formal First Appeal under Section 19(1) of the RTI Act, 2005. 
+    No Application ID needed — just provide the response details.
+</p>
+
+{% if has_analysis %}
+<div class="alert alert-success">
+    <i class="bi bi-check-circle"></i> <strong>Response data loaded</strong> from your previous analysis. You can edit below or generate directly.
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-lightbulb"></i> <strong>Tip:</strong> Analyse a response first on the 
+    <a href="{{ url_for('parse_response') }}" class="alert-link">Parse Government Response</a> page, or enter details below.
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if result and result.type == 'error' %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle"></i> {{ result.message }}
+    {% if result.legal_reference %}
+    <p class="mt-2 mb-0"><small>{{ result.legal_reference }}</small></p>
+    {% endif %}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+
+{% if not result or result.type == 'error' %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            <h5 class="mb-3"><i class="bi bi-file-text"></i> Response Details</h5>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Response Classification *</label>
+                    <select class="form-select" name="classification">
+                        {% for opt in classification_options %}
+                        <option value="{{ opt }}" {% if opt == default_class %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Government Response Text *</label>
+                <textarea class="form-control" name="response_text" rows="5" required
+                    placeholder="Paste the government's response text here...">{{ default_text }}</textarea>
+            </div>
+
+            <hr>
+            <h5 class="mb-3"><i class="bi bi-person"></i> Your Details (Optional)</h5>
+            <p class="text-muted small">Leave blank to use placeholders like [Your Name] in the letter</p>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Your Full Name</label>
+                    <input type="text" class="form-control" name="appellant_name" placeholder="e.g. Rahul Sharma">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Your Postal Address</label>
+                    <textarea class="form-control" name="appellant_address" rows="2" 
+                        placeholder="House No., Street, City, State - PIN"></textarea>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Department Name</label>
+                    <input type="text" class="form-control" name="department_name" placeholder="e.g. Ministry of Railways">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">RTI Subject</label>
+                    <input type="text" class="form-control" name="rti_subject" placeholder="e.g. Tender details for Project XYZ">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">RTI Filing Date</label>
+                    <input type="text" class="form-control" name="date_filed" placeholder="e.g. 15 January 2026">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-warning btn-lg w-100">
+                <i class="bi bi-lightning"></i> Generate Appeal Letter
+            </button>
+        </form>
+    </div>
+</div>
+
+{% elif result.type == 'no_appeal' %}
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-check-circle"></i> No First Appeal Required
+    </div>
+    <div class="card-body">
+        <p><strong>Reason:</strong> {{ result.message }}</p>
+        {% if result.suggestion %}
+        <p><strong>Suggestion:</strong> {{ result.suggestion }}</p>
+        {% endif %}
+        {% if result.legal_reference %}
+        <h5>Legal Reference</h5>
+        <p>{{ result.legal_reference }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<form action="{{ url_for('clear_session') }}" method="post" class="d-inline">
+    <button type="submit" class="btn btn-outline-secondary" onclick="window.location.reload();">
+        <i class="bi bi-arrow-clockwise"></i> Clear &amp; Start New
+    </button>
+</form>
+
+{% elif result.type == 'appeal_letter' or result.appeal_text or result.content %}
+<div class="alert alert-success">
+    <i class="bi bi-check-circle"></i> Appeal letter generated!
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-file-text"></i> Appeal Letter Draft
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('download_pdf') }}" method="post">
+                    <textarea name="text" class="form-control mb-3" rows="18" id="appeal_text">{{ result.content or result.appeal_text or '' }}</textarea>
+                    <input type="hidden" name="title" value="First Appeal — {{ result.classification or 'RTI' }}">
+                    <input type="hidden" name="filename" value="Appeal_{{ now.strftime('%Y%m%d') }}.pdf">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-download"></i> Download Appeal as PDF
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-info-circle"></i> Filing Details
+            </div>
+            <div class="card-body">
+                <p><strong>Appeal Authority:</strong><br>First Appellate Authority</p>
+                <p><strong>File By:</strong><br>{{ result.deadline_to_file or result.deadline or 'N/A' }}</p>
+                <p><strong>Legal Basis:</strong><br>{{ result.legal_basis or result.legal_reference or 'Section 19(1), RTI Act 2005' }}</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-list-check"></i> Grounds
+            </div>
+            <div class="card-body">
+                {{ result.grounds or result.grounds_summary or '' }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3">
+    <i class="bi bi-info-circle"></i> <strong>File this appeal within 30 days</strong> of receiving the response 
+    (or within 30 days of the response deadline if no response was received). 
+    Submit to the First Appellate Authority of the concerned department.
+</div>
+
+<form action="{{ url_for('clear_session') }}" method="post" class="d-inline">
+    <button type="submit" class="btn btn-outline-secondary" onclick="window.location.reload();">
+        <i class="bi bi-arrow-clockwise"></i> Clear &amp; Start New
+    </button>
+</form>
+
+{% else %}
+<div class="alert alert-warning">
+    Received unexpected response from the API.
+    <pre>{{ result | tojson(indent=2) }}</pre>
+</div>
+
+<form action="{{ url_for('clear_session') }}" method="post" class="d-inline">
+    <button type="submit" class="btn btn-outline-secondary" onclick="window.location.reload();">
+        <i class="bi bi-arrow-clockwise"></i> Clear &amp; Start New
+    </button>
+</form>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setQuestion(q) {
+    document.getElementById('question').value = q;
+}
+</script>
+{% endblock %}
